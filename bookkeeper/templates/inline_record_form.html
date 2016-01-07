@@ -14,7 +14,8 @@
            onclick="faForm.addInlineField(this, 'records');">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
         </a>
-        <a href="#">
+        <a href="javascript:void(0)"
+           onclick="faForm.deleteField(this, {{ True if field.get_pk and field.get_pk() else False | tojson | safe }});">
             <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
         </a>
     </div>
@@ -28,27 +29,27 @@
     <span></span>
 </td>
 <td class="debit"><span></span></td>
+<td class="debit thousand"><span></span></td>
 <td class="debit"><span></span></td>
 <td class="debit"><span></span></td>
+<td class="debit thousand"><span></span></td>
 <td class="debit"><span></span></td>
 <td class="debit"><span></span></td>
+<td class="debit decimal"><span></span></td>
 <td class="debit"><span></span></td>
-<td class="debit"><span></span></td>
-<td class="debit"><span></span></td>
-<td class="debit"><span></span></td>
-<td class="debit"><span></span></td>
+<td class="debit last"><span></span></td>
 
 <td class="credit">
     <input type="text">
     <span></span>
 </td>
 <td class="credit"><span></span></td>
+<td class="credit thousand"><span></span></td>
 <td class="credit"><span></span></td>
 <td class="credit"><span></span></td>
+<td class="credit thousand"><span></span></td>
 <td class="credit"><span></span></td>
 <td class="credit"><span></span></td>
+<td class="credit decimal"><span></span></td>
 <td class="credit"><span></span></td>
-<td class="credit"><span></span></td>
-<td class="credit"><span></span></td>
-<td class="credit"><span></span></td>
-<td class="credit"><span></span></td>
+<td class="credit last"><span></span></td>

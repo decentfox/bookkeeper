@@ -4,6 +4,113 @@
 {% block head %}
 {{ super() }}
 <style>
+    .voucher {
+        border: 1px solid #888;
+        background-color: #fefefe;
+        position: relative;
+        padding: 10px;
+    }
+
+    .voucher .title {
+        text-align: center;
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+
+    .voucher .index {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+    }
+
+    .voucher .date {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+    }
+
+    .voucher .period {
+        position: absolute;
+    }
+
+    .voucher .company .select2-container {
+        display: inline-block;
+        margin-right: 20px;
+    }
+
+    .voucher .company select {
+        width: 25%;
+    }
+
+    .voucher .clear {
+        clear: both;
+    }
+
+    .records {
+        border: 2px solid #888;
+    }
+
+    .table-bordered>tbody>tr>td,
+    .table-bordered>thead>tr>td {
+        border-color: #888;
+    }
+
+
+    .table-bordered>thead>tr>td.debit,
+    .table-bordered>thead>tr>td.credit,
+    .table-bordered>tbody>tr>td.debit,
+    .table-bordered>tbody>tr>td.credit {
+        border-right-color: #ddd;
+    }
+
+    .table-bordered>thead>tr>td[colspan='11'] {
+        border-bottom-color: #ddd;
+    }
+
+    .table-bordered>thead>tr>td.debit,
+    .table-bordered>thead>tr>td.credit,
+    .table-bordered>thead>tr>td {
+        border-bottom-width: 1px;
+        border-bottom-color: #888;
+    }
+
+    .table-bordered>thead>tr>td.thousand,
+    .table-bordered>tbody>tr>td.thousand {
+        border-right-color: #88dd88;
+    }
+
+    .table-bordered>thead>tr>td.decimal,
+    .table-bordered>tbody>tr>td.decimal {
+        border-right-color: #dd8888;
+    }
+
+    .table-bordered>thead>tr>td.last,
+    .table-bordered>tbody>tr>td.last {
+        border-right-color: #888;
+    }
+
+    .table > tbody > tr > td,
+    .table > tbody > tr > th,
+    .table > tfoot > tr > td,
+    .table > tfoot > tr > th,
+    .table > thead > tr > td,
+    .table > thead > tr > th {
+        vertical-align: middle;
+    }
+
+    .voucher thead {
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .voucher .units {
+        font-size: 11px;
+    }
+
+    .voucher .units td {
+        padding: 2px;
+    }
+
     tr:hover .row-action {
         display: block;
     }
@@ -101,11 +208,18 @@
 {% endblock %}
 
 {% block create_form %}
+    <ul>
+    {% for f in form if f.widget.input_type != 'hidden' %}
+        {% for e in f.errors if e is string %}
+            <li>{{ f.short_name }} : {{ e }}</li>
+        {% endfor %}
+    {% endfor %}
+    </ul>
     <form action="{{ action or '' }}" method="POST" role="form"
           class="admin-form form-inline" enctype="multipart/form-data">
         <div class="voucher">
-            <div class="company">
-                {{ form.company(class='form-control') | safe }}
+            <div class="date">
+                {{ form.date(class='form-control') | safe }}
             </div>
             <div class="title">
                 记账凭证
@@ -115,14 +229,10 @@
                 {{ form.index(class='form-control') | safe }}
                 号
             </div>
-            <div class="date">
-                日期
-                {{ form.date(class='form-control') | safe }}
-            </div>
-            <div class="period">
-                {{ form.period(class='form-control') | safe }}
-            </div>
-            <table class="table table-bordered table-condensed table-hover">
+{#            <div class="period">#}
+{#                {{ form.period(class='form-control') | safe }}#}
+{#            </div>#}
+            <table class="records table table-bordered table-condensed table-hover">
                 <thead>
                 <tr>
                     <td rowspan="2">
@@ -131,70 +241,73 @@
                     <td rowspan="2">
                         会计科目
                     </td>
-                    <td colspan="11">
+                    <td colspan="11" class="units">
                         借方金额
                     </td>
-                    <td colspan="11">
+                    <td colspan="11" class="units">
                         贷方金额
                     </td>
                 </tr>
-                <tr>
-                    <td>亿</td>
-                    <td>千</td>
-                    <td>百</td>
-                    <td>十</td>
-                    <td>万</td>
-                    <td>千</td>
-                    <td>百</td>
-                    <td>十</td>
-                    <td>元</td>
-                    <td>角</td>
-                    <td>分</td>
-                    <td>亿</td>
-                    <td>千</td>
-                    <td>百</td>
-                    <td>十</td>
-                    <td>万</td>
-                    <td>千</td>
-                    <td>百</td>
-                    <td>十</td>
-                    <td>元</td>
-                    <td>角</td>
-                    <td>分</td>
+                <tr class="units">
+                    <td class="debit">亿</td>
+                    <td class="debit">千</td>
+                    <td class="debit thousand">百</td>
+                    <td class="debit">十</td>
+                    <td class="debit">万</td>
+                    <td class="debit thousand">千</td>
+                    <td class="debit">百</td>
+                    <td class="debit">十</td>
+                    <td class="debit decimal">元</td>
+                    <td class="debit">角</td>
+                    <td class="debit last">分</td>
+                    <td class="credit">亿</td>
+                    <td class="credit">千</td>
+                    <td class="credit thousand">百</td>
+                    <td class="credit">十</td>
+                    <td class="credit">万</td>
+                    <td class="credit thousand">千</td>
+                    <td class="credit">百</td>
+                    <td class="credit">十</td>
+                    <td class="credit decimal">元</td>
+                    <td class="credit">角</td>
+                    <td class="credit last">分</td>
                 </tr>
                 </thead>
                 <tbody>
                 {{ form.records() | safe }}
                 <tr>
                     <td colspan="2">合计</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit thousand"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit thousand"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit decimal"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit last"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit thousand"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit thousand"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit decimal"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit last"><span></span></td>
                 </tr>
                 </tbody>
             </table>
-            <div class="creator">
-                制单人：{{ form.creator.value }}
+            <div class="company">
+                {{ form.company(class='form-control') | safe }}
+                制单人：
             </div>
+
+            <div class="clear"></div>
         </div>
         {{ lib.render_form_buttons(return_url, extra(), False) }}
     </form>
@@ -206,7 +319,7 @@
 (function() {
     faForm.addInlineField = function (el, elID) {
         // Get current inline field
-        var $el = $(el).closest('.record');
+        var $el = $(el).closest('tr');
         // Figure out new field ID
         var id = elID;
 
@@ -254,15 +367,24 @@
         faForm.applyGlobalStyles($template);
     };
 
+    faForm.deleteField = function(el, hasID) {
+        if ($('.record').size() == 2) return;
+        if (hasID) {
+        } else {
+            $(el).closest('.record').remove();
+        }
+    };
+
     var records = $('.record');
-    var left = 5 - records.size();
+    var left = 4 - records.size();
+    var body = $('body');
     for (var i = 0; i < left; i++)
         faForm.addInlineField('#records-template', 'records')
-    $(document).on('click', '.record td.debit, .record td.credit', function() {
+    body.on('click', '.record td.debit, .record td.credit', function() {
         var self = $(this);
         self.parent().children('.' + self.attr('class')).first().children().show().focus();
     });
-    $(document).on('blur', '.record td.debit input, .record td.credit input', function() {
+    body.on('blur', '.record td.debit input, .record td.credit input', function() {
         var self = $(this);
         self.hide();
         if (!self.val()) return;

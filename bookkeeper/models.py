@@ -86,7 +86,7 @@ class Record(db.Model, db.SurrogatePK):
     summary = db.Column(sa.Unicode())
     direction = db.Column(ChoiceType(Direction, sa.SmallInteger()),
                           nullable=False, default=Direction.debit)
-    amount = db.Column(sa.Integer(), nullable=False)
+    amount = db.Column(sa.Numeric(16, 2), nullable=False)
 
     voucher_id = db.reference_col('bkr_vouchers')
     voucher = db.relationship('Voucher', backref='records')

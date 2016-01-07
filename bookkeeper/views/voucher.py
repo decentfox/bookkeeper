@@ -1,7 +1,7 @@
 from flask.ext.admin.contrib.sqla import ModelView
 from flask.ext.admin.contrib.sqla.fields import InlineModelFormList
 from flask.ext.admin.contrib.sqla.form import InlineModelConverter
-from flask.ext.admin.form import RenderTemplateWidget
+from flask.ext.admin.form import RenderTemplateWidget, BaseForm
 from flask.ext.admin.model.fields import InlineModelFormField
 from flask.ext.admin.model.widgets import InlineFormWidget
 from wtforms import HiddenField
@@ -40,8 +40,36 @@ class InlineRecordConverter(InlineModelConverter):
     inline_field_list_type = InlineRecordFormList
 
 
+class DirectionField(HiddenField):
+    def process_formdata(self, valuelist):
+        if valuelist:
+            self.data = models.Direction(int(valuelist[0]))
+        else:
+            self.data = None
+
+    def _value(self):
+        return self.data.value
+
+
+class VoucherForm(BaseForm):
+    def populate_obj(self, obj):
+        if not obj.creator:
+            obj.creator = models.User.query.first()
+        super().populate_obj(obj)
+
+
+# noinspection PyAbstractClass
 class VoucherView(base.ViewMixin, ModelView):
     create_template = 'voucher_create.html'
+    edit_template = 'voucher_create.html'
+    form_columns = [
+        'index',
+        'date',
+        'company',
+        'period',
+        'records',
+    ]
+    form_base_class = VoucherForm
     inline_model_form_converter = InlineRecordConverter
     inline_models = [
         (models.Record, dict(
@@ -58,7 +86,7 @@ class VoucherView(base.ViewMixin, ModelView):
                 ),
             ),
             form_overrides=dict(
-                direction=HiddenField,
+                direction=DirectionField,
                 amount=HiddenField,
             ),
             form_widget_args=dict(

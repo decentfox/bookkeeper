@@ -3,10 +3,12 @@
         {{ subfield }}
     </tr>
 {% endfor %}
-<tr id="records-template" class="record"><td >
-    {% filter forceescape %}
-        <tr class="record">
-            {{ template }}
-        </tr>
-    {% endfilter %}
-</td></tr>
+<tr id="records-template">
+    <td>
+        {% filter forceescape %}
+            <tr class="record">
+                {{ template }}
+            </tr>
+        {% endfilter %}
+    </td>
+</tr>
