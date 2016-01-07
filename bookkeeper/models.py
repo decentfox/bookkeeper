@@ -6,9 +6,12 @@ from sqlalchemy_utils import ChoiceType
 
 
 class Direction(IntEnum):
-    credit = 0
     debit = 1
+    credit = -1
 
+
+Direction.debit.label = '借'
+Direction.credit.label = '贷'
 
 users_x_companies = sa.Table(
     'bkr_users_x_companies', db.Model.metadata,
@@ -50,8 +53,8 @@ class Account(db.Model, db.SurrogatePK):
     id = db.Column(sa.BigInteger(), primary_key=True)
     code = db.Column(sa.Unicode(), unique=True)
     title = db.Column(sa.Unicode(), nullable=False)
-    direction = db.Column(
-        ChoiceType(Direction, sa.SmallInteger()), nullable=False)
+    direction = db.Column(ChoiceType(Direction, sa.SmallInteger()),
+                          nullable=False, default=Direction.debit)
 
     parent_id = db.reference_col('bkr_accounts', nullable=True)
     parent = db.relationship('Account', backref='children',
@@ -81,8 +84,8 @@ class Record(db.Model, db.SurrogatePK):
     __tablename__ = 'bkr_records'
 
     summary = db.Column(sa.Unicode())
-    direction = db.Column(
-        ChoiceType(Direction, sa.SmallInteger()), nullable=False)
+    direction = db.Column(ChoiceType(Direction, sa.SmallInteger()),
+                          nullable=False, default=Direction.debit)
     amount = db.Column(sa.Integer(), nullable=False)
 
     voucher_id = db.reference_col('bkr_vouchers')

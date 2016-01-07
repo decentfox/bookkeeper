@@ -6,7 +6,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         {% endif %}
         {% for f in field.form if f.widget.input_type == 'hidden' %}
-            {{ f }}
+            {{ f(**form_opts.widget_args.get(f.short_name, {})) }}
         {% endfor %}
     {% endif %}
     <div class="row-action">
@@ -23,25 +23,32 @@
 <td>
     {{ field.form.account() | safe }}
 </td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td class="debit">
+    <input type="text">
+    <span></span>
+</td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+<td class="debit"><span></span></td>
+
+<td class="credit">
+    <input type="text">
+    <span></span>
+</td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>
+<td class="credit"><span></span></td>

@@ -80,6 +80,23 @@
     #records-template {
         display: none;
     }
+
+    .record td.debit input,
+    .record td.credit input {
+        right: auto;
+        width: calc(1100% + 10px);
+        display: none;
+        z-index: 10;
+        text-align: right;
+    }
+
+    .record td.debit,
+    .record td.credit {
+        cursor: text;
+        line-height: 60px;
+        text-align: center;
+        padding: 0;
+    }
 </style>
 {% endblock %}
 
@@ -237,8 +254,40 @@
         faForm.applyGlobalStyles($template);
     };
 
-    for (var i = 0; i < 4; i++)
+    var records = $('.record');
+    var left = 5 - records.size();
+    for (var i = 0; i < left; i++)
         faForm.addInlineField('#records-template', 'records')
+    $(document).on('click', '.record td.debit, .record td.credit', function() {
+        var self = $(this);
+        self.parent().children('.' + self.attr('class')).first().children().show().focus();
+    });
+    $(document).on('blur', '.record td.debit input, .record td.credit input', function() {
+        var self = $(this);
+        self.hide();
+        if (!self.val()) return;
+        var amount = Math.round(self.val() * 100);
+        var td = self.parent();
+        var tr = td.parent();
+        var direction = '.' + td.attr('class');
+        $('.debit input, .credit input', tr).val('');
+        self.val(amount / 100);
+        $('.amount', tr).val(amount / 100);
+        $('.direction', tr).val(direction == '.debit' ? '{{ models.Direction.debit.value }}' : '{{ models.Direction.credit.value }}');
+        var tds = tr.children(direction);
+        $('td.debit > span, td.credit > span', tr).text('');
+        var i = 1;
+        while (amount > 0 || i < 4) {
+            var digit = amount % 10;
+            amount = Math.floor(amount / 10);
+            $('> span', tds[tds.size() - i]).text(digit);
+            i++;
+        }
+    });
+    records.each(function() {
+        var self = $(this);
+        $($('.direction', self).val() == '{{ models.Direction.debit.value }}' ? '.debit input' : '.credit input', self).val($('.amount', self).val()).blur();
+    });
 })();
 </script>
 {% endblock %}

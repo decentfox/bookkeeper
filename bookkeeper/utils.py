@@ -13,5 +13,5 @@ def import_account_titles():
         for row in inp:
             models.Account.create(
                 code=row[0], title=row[1],
-                direction=models.Direction.credit if row[3] == '借'
+                direction=models.Direction.credit if row[3] == '贷'
                 else models.Direction.debit)
