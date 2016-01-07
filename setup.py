@@ -31,7 +31,7 @@ setuptools.setup(
 
     entry_points={
         'console_scripts': [
-            # 'script-name=bookkeeper.bookkeeper.script:main',
+            'import-account-title=bookkeeper.utils:import_account_titles',
         ],
     },
 

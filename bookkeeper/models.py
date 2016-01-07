@@ -30,6 +30,9 @@ class Company(db.Model, db.SurrogatePK):
 
     name = db.Column(sa.Unicode())
 
+    def __repr__(self):
+        return self.name
+
 
 class Period(db.Model, db.SurrogatePK):
     __tablename__ = 'bkr_periods'
@@ -37,12 +40,15 @@ class Period(db.Model, db.SurrogatePK):
     year = db.Column(sa.Integer())
     month = db.Column(sa.SmallInteger())
 
+    def __repr__(self):
+        return '{}年第{}期'.format(self.year, self.month)
+
 
 class Account(db.Model, db.SurrogatePK):
     __tablename__ = 'bkr_accounts'
 
     id = db.Column(sa.BigInteger(), primary_key=True)
-    code = db.Column(sa.Unicode())
+    code = db.Column(sa.Unicode(), unique=True)
     title = db.Column(sa.Unicode(), nullable=False)
     direction = db.Column(
         ChoiceType(Direction, sa.SmallInteger()), nullable=False)
@@ -50,6 +56,9 @@ class Account(db.Model, db.SurrogatePK):
     parent_id = db.reference_col('bkr_accounts', nullable=True)
     parent = db.relationship('Account', backref='children',
                              remote_side=[id])
+
+    def __repr__(self):
+        return '{} {}'.format(self.code, self.title)
 
 
 class Voucher(db.Model, db.SurrogatePK):

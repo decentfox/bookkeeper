@@ -1,0 +1,12 @@
+{% for subfield in field %}
+    <tr id="{{ subfield.id }}" class="record">
+        {{ subfield }}
+    </tr>
+{% endfor %}
+<tr id="records-template" class="record"><td >
+    {% filter forceescape %}
+        <tr class="record">
+            {{ template }}
+        </tr>
+    {% endfilter %}
+</td></tr>

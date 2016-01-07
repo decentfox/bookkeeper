@@ -1,0 +1,47 @@
+<td>
+    {% if field.form.hidden_tag is defined %}
+        {{ field.form.hidden_tag() }}
+    {% else %}
+        {% if csrf_token %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        {% endif %}
+        {% for f in field.form if f.widget.input_type == 'hidden' %}
+            {{ f }}
+        {% endfor %}
+    {% endif %}
+    <div class="row-action">
+        <a href="javascript:void(0)"
+           onclick="faForm.addInlineField(this, 'records');">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        </a>
+        <a href="#">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </a>
+    </div>
+    {{ field.form.summary() | safe }}
+</td>
+<td>
+    {{ field.form.account() | safe }}
+</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>

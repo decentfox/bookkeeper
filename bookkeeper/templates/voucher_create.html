@@ -1,0 +1,244 @@
+{% extends 'admin/model/create.html' %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block head %}
+{{ super() }}
+<style>
+    tr:hover .row-action {
+        display: block;
+    }
+
+    tr.record {
+        height: 60px;
+        line-height: 60px;
+    }
+
+    .record td {
+        position: relative;
+    }
+
+    .row-action {
+        position: absolute;
+        right: 100%;
+        top: 0;
+        width: 2em;
+        display: none;
+        line-height: 30px;
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .record td:nth-child(1),
+    .record td:nth-child(2) {
+        width: 35%;
+    }
+
+    .record .select2-container,
+    .record td select,
+    .record td input {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        border: 0;
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+    }
+
+    .record td input:focus {
+        background-color: #fff;
+    }
+
+    .record .select2-container {
+        position: absolute;
+    }
+
+    .record .select2-container,
+    .record .select2-choice {
+        height: 100%;
+        line-height: 60px;
+        background-color: transparent;
+    }
+
+    .record .select2-choice > span {
+        padding: 0;
+    }
+
+    .record .select2-container a {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .record .select2-container .select2-choice .select2-arrow b,
+    .record .select2-container .select2-choice div b {
+        background-position-y: 15px;
+    }
+
+    #records-template {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block create_form %}
+    <form action="{{ action or '' }}" method="POST" role="form"
+          class="admin-form form-inline" enctype="multipart/form-data">
+        <div class="voucher">
+            <div class="company">
+                {{ form.company(class='form-control') | safe }}
+            </div>
+            <div class="title">
+                记账凭证
+            </div>
+            <div class="index">
+                凭证字 记
+                {{ form.index(class='form-control') | safe }}
+                号
+            </div>
+            <div class="date">
+                日期
+                {{ form.date(class='form-control') | safe }}
+            </div>
+            <div class="period">
+                {{ form.period(class='form-control') | safe }}
+            </div>
+            <table class="table table-bordered table-condensed table-hover">
+                <thead>
+                <tr>
+                    <td rowspan="2">
+                        摘要
+                    </td>
+                    <td rowspan="2">
+                        会计科目
+                    </td>
+                    <td colspan="11">
+                        借方金额
+                    </td>
+                    <td colspan="11">
+                        贷方金额
+                    </td>
+                </tr>
+                <tr>
+                    <td>亿</td>
+                    <td>千</td>
+                    <td>百</td>
+                    <td>十</td>
+                    <td>万</td>
+                    <td>千</td>
+                    <td>百</td>
+                    <td>十</td>
+                    <td>元</td>
+                    <td>角</td>
+                    <td>分</td>
+                    <td>亿</td>
+                    <td>千</td>
+                    <td>百</td>
+                    <td>十</td>
+                    <td>万</td>
+                    <td>千</td>
+                    <td>百</td>
+                    <td>十</td>
+                    <td>元</td>
+                    <td>角</td>
+                    <td>分</td>
+                </tr>
+                </thead>
+                <tbody>
+                {{ form.records() | safe }}
+                <tr>
+                    <td colspan="2">合计</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="creator">
+                制单人：{{ form.creator.value }}
+            </div>
+        </div>
+        {{ lib.render_form_buttons(return_url, extra(), False) }}
+    </form>
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+<script>
+(function() {
+    faForm.addInlineField = function (el, elID) {
+        // Get current inline field
+        var $el = $(el).closest('.record');
+        // Figure out new field ID
+        var id = elID;
+
+        var maxId = 0;
+
+        $('.record').each(function (idx, field) {
+            var $field = $(field);
+
+            var parts = $field.attr('id').split('-');
+            idx = parseInt(parts[parts.length - 1], 10) + 1;
+
+            if (idx > maxId) {
+                maxId = idx;
+            }
+        });
+
+        var prefix = id + '-' + maxId;
+
+        // Get template
+        var $template = $($('#records-template').find('> td').text());
+
+        // Set form ID
+        $template.attr('id', prefix);
+
+        // Fix form IDs
+        $('[name]', $template).each(function (e) {
+            var me = $(this);
+
+            var id = me.attr('id');
+            var name = me.attr('name');
+
+            id = prefix + (id !== '' ? '-' + id : '');
+            name = prefix + (name !== '' ? '-' + name : '');
+
+            me.attr('id', id);
+            me.attr('name', name);
+        });
+
+        $template.insertBefore($el);
+
+        // Select first field
+        $('input:first', $template).focus();
+
+        // Apply styles
+        faForm.applyGlobalStyles($template);
+    };
+
+    for (var i = 0; i < 4; i++)
+        faForm.addInlineField('#records-template', 'records')
+})();
+</script>
+{% endblock %}
