@@ -1,0 +1,239 @@
+.voucher {
+    border: 1px solid #888;
+    background-color: #fefef2;
+    position: relative;
+    padding: 25px;
+}
+
+.voucher .title {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.voucher .index {
+    position: absolute;
+    right: 25px;
+    top: 25px;
+}
+
+.voucher .index input {
+    width: 44px;
+    text-align: center;
+}
+
+.voucher .date {
+    position: absolute;
+    left: 25px;
+    top: 25px;
+}
+
+.voucher .period {
+    position: absolute;
+}
+
+.voucher .company .select2-container {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.voucher .company select {
+    width: 25%;
+}
+
+.voucher .clear {
+    clear: both;
+}
+
+.records {
+    border: 2px solid #888;
+}
+
+.table-bordered > tbody > tr > td,
+.table-bordered > thead > tr > td {
+    border-color: #888;
+}
+
+.table-bordered > thead > tr > td.debit,
+.table-bordered > thead > tr > td.credit,
+.table-bordered > tbody > tr > td.debit,
+.table-bordered > tbody > tr > td.credit {
+    border-right-color: #ddd;
+}
+
+.table-bordered > thead > tr > td[colspan='11'] {
+    border-bottom-color: #ddd;
+}
+
+.table-bordered > thead > tr > td.debit,
+.table-bordered > thead > tr > td.credit,
+.table-bordered > thead > tr > td {
+    border-bottom-width: 1px;
+    border-bottom-color: #888;
+}
+
+.table-bordered > thead > tr > td.thousand,
+.table-bordered > tbody > tr > td.thousand {
+    border-right-color: #88dd88;
+}
+
+.table-bordered > thead > tr > td.decimal,
+.table-bordered > tbody > tr > td.decimal {
+    border-right-color: #dd8888;
+}
+
+.table-bordered > thead > tr > td.last,
+.table-bordered > tbody > tr > td.last {
+    border-right-color: #888;
+}
+
+.table > tbody > tr > td,
+.table > tbody > tr > th,
+.table > tfoot > tr > td,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > thead > tr > th {
+    vertical-align: middle;
+}
+
+.voucher thead {
+    text-align: center;
+    font-weight: bold;
+}
+
+.voucher .units {
+    font-size: 11px;
+}
+
+.voucher .units td {
+    padding: 2px;
+}
+
+tr:hover .row-action {
+    display: block;
+}
+
+.table-hover > tbody > tr:hover {
+    background-color: #f5f5f0;
+}
+
+tr.record,
+tr.summary {
+    height: 60px;
+    line-height: 60px;
+}
+
+td.debit,
+td.credit,
+tr.summary {
+    font-weight: bold;
+}
+
+.voucher td {
+    position: relative;
+}
+
+.voucher input {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.voucher input:focus {
+    background-color: #fff;
+}
+
+.row-action {
+    position: absolute;
+    right: 100%;
+    top: 0;
+    width: 2em;
+    display: none;
+    line-height: 30px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.record td:nth-child(1),
+.record td:nth-child(2) {
+    width: 35%;
+}
+
+.record .select2-container,
+.record td select,
+.record td input {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.record td input {
+    padding: 10px;
+}
+
+.record .select2-container {
+    position: absolute;
+}
+
+.record .select2-container {
+    height: 100%;
+    line-height: 60px;
+    background-color: transparent;
+}
+
+.record .select2-choice {
+    line-height: 40px;
+    height: 100%;
+    background-color: transparent;
+    padding: 10px;
+}
+
+.record .select2-choice > span {
+    padding: 0;
+}
+
+.record .select2-container a {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.record .select2-container .select2-choice .select2-arrow b,
+.record .select2-container .select2-choice div b {
+    background-position-y: 15px;
+}
+
+#records-template {
+    display: none;
+}
+
+.record td.debit input,
+.record td.credit input {
+    right: auto;
+    width: calc(1100% + 10px);
+    display: none;
+    z-index: 10;
+    text-align: right;
+}
+
+.record td.debit,
+.record td.credit {
+    cursor: text;
+    width: 15px;
+}
+
+td.debit span,
+td.credit span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    vertical-align: middle;
+    line-height: 60px;
+    text-align: center;
+}

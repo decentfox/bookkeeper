@@ -1,4 +1,4 @@
-{% extends 'admin/model/create.html' %}
+{% extends 'admin/model/edit.html' %}
 {% import 'lib.html' as bkr with context %}
 
 {% block head %}
@@ -7,7 +7,7 @@
           rel="stylesheet">
 {% endblock %}
 
-{% block create_form %}
+{% block edit_form %}
     {{ bkr.render_voucher(form, extra) }}
 {% endblock %}
 

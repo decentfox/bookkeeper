@@ -1,0 +1,118 @@
+{% import 'admin/lib.html' as lib with context %}
+
+{% macro render_field(field) %}
+    {% set _dummy = kwargs.setdefault('class', 'form-control') %}
+    {% if h.is_field_error(field.errors) %}
+        {% set _dummy = kwargs.update({'class': kwargs['class'] + ' has-error'}) %}
+    {% endif %}
+    {{ field(**kwargs)|safe }}
+{% endmacro %}
+
+{% macro render_voucher(form, extra) %}
+    <ul>
+        {% for f in form if f.widget.input_type != 'hidden' %}
+            {% for e in f.errors if e is string %}
+                <li>{{ f.short_name }} : {{ e }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+    <form action="{{ action or '' }}" method="POST" role="form"
+          class="admin-form form-inline" enctype="multipart/form-data">
+        <div class="voucher">
+            <div class="date">
+                {{ render_field(form.date) }}
+            </div>
+            <div class="title">
+                记账凭证
+            </div>
+            <div class="index">
+                凭证字 记
+                {{ render_field(form.index) }}
+                号
+            </div>
+            {#            <div class="period">#}
+            {#                {{ render_field(form.period) }}#}
+            {#            </div>#}
+            <table class="records table table-bordered table-condensed table-hover">
+                <thead>
+                <tr>
+                    <td rowspan="2">
+                        摘要
+                    </td>
+                    <td rowspan="2">
+                        会计科目
+                    </td>
+                    <td colspan="11" class="units">
+                        借方金额
+                    </td>
+                    <td colspan="11" class="units">
+                        贷方金额
+                    </td>
+                </tr>
+                <tr class="units">
+                    <td class="debit">亿</td>
+                    <td class="debit">千</td>
+                    <td class="debit thousand">百</td>
+                    <td class="debit">十</td>
+                    <td class="debit">万</td>
+                    <td class="debit thousand">千</td>
+                    <td class="debit">百</td>
+                    <td class="debit">十</td>
+                    <td class="debit decimal">元</td>
+                    <td class="debit">角</td>
+                    <td class="debit last">分</td>
+                    <td class="credit">亿</td>
+                    <td class="credit">千</td>
+                    <td class="credit thousand">百</td>
+                    <td class="credit">十</td>
+                    <td class="credit">万</td>
+                    <td class="credit thousand">千</td>
+                    <td class="credit">百</td>
+                    <td class="credit">十</td>
+                    <td class="credit decimal">元</td>
+                    <td class="credit">角</td>
+                    <td class="credit last">分</td>
+                </tr>
+                </thead>
+                <tbody>
+                {{ form.records() | safe }}
+                <tr class="summary">
+                    <td colspan="2">
+                        合计：
+                        <span></span>
+                    </td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit thousand"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit thousand"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit decimal"><span></span></td>
+                    <td class="debit"><span></span></td>
+                    <td class="debit last"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit thousand"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit thousand"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit decimal"><span></span></td>
+                    <td class="credit"><span></span></td>
+                    <td class="credit last"><span></span></td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="company">
+                {{ render_field(form.company) }}
+                制单人：
+            </div>
+
+            <div class="clear"></div>
+        </div>
+        {{ lib.render_form_buttons(return_url, extra(), False) }}
+    </form>
+{% endmacro %}
