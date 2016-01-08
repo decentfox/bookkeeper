@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+import datetime
 import sqlalchemy as sa
 from decent.web import db
 from sqlalchemy_utils import ChoiceType
@@ -68,7 +69,7 @@ class Voucher(db.Model, db.SurrogatePK):
     __tablename__ = 'bkr_vouchers'
 
     index = db.Column(sa.Integer())
-    date = db.Column(sa.Date())
+    date = db.Column(sa.Date(), default=datetime.datetime.today())
 
     creator_id = db.reference_col('bkr_users')
     creator = db.relationship('User', backref='vouchers')

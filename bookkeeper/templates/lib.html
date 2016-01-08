@@ -1,6 +1,11 @@
 {% import 'admin/lib.html' as lib with context %}
 
 {% macro render_field(field) %}
+    {% if form_opts %}
+        {% set kwargs = form_opts.widget_args.get(field.short_name, {}) %}
+    {% else %}
+        {% set kwargs = {} %}
+    {% endif %}
     {% set _dummy = kwargs.setdefault('class', 'form-control') %}
     {% if h.is_field_error(field.errors) %}
         {% set _dummy = kwargs.update({'class': kwargs['class'] + ' has-error'}) %}
@@ -8,7 +13,7 @@
     {{ field(**kwargs)|safe }}
 {% endmacro %}
 
-{% macro render_voucher(form, extra) %}
+{% macro render_voucher(extra) %}
     <ul>
         {% for f in form if f.widget.input_type != 'hidden' %}
             {% for e in f.errors if e is string %}
@@ -75,7 +80,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {{ form.records() | safe }}
+                {{ render_field(form.records) }}
                 <tr class="summary">
                     <td colspan="2">
                         合计：
@@ -113,6 +118,6 @@
 
             <div class="clear"></div>
         </div>
-        {{ lib.render_form_buttons(return_url, extra(), False) }}
+        {{ lib.render_form_buttons(return_url, extra, False) }}
     </form>
 {% endmacro %}

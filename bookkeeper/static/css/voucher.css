@@ -179,16 +179,19 @@ tr.summary {
     position: absolute;
 }
 
+.voucher .select2-choice,
+.voucher .select2-container {
+    background-color: transparent;
+}
+
 .record .select2-container {
     height: 100%;
     line-height: 60px;
-    background-color: transparent;
 }
 
 .record .select2-choice {
     line-height: 40px;
     height: 100%;
-    background-color: transparent;
     padding: 10px;
 }
 
@@ -196,7 +199,7 @@ tr.summary {
     padding: 0;
 }
 
-.record .select2-container a {
+.voucher .select2-container a {
     border: none;
     border-radius: 0;
     box-shadow: none;

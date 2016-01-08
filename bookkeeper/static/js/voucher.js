@@ -1,4 +1,4 @@
-(function() {
+(function () {
     faForm.addInlineField = function (el, elID) {
         // Get current inline field
         var $el = $(el).closest('tr');
@@ -49,7 +49,7 @@
         faForm.applyGlobalStyles($template);
     };
 
-    faForm.deleteField = function(el, hasID) {
+    faForm.deleteField = function (el, hasID) {
         if ($('.record').size() == 2) return;
         if (hasID) {
         } else {
@@ -88,7 +88,7 @@
                 .replace(/^整$/, '零元整');
     };
 
-    var setAmount = function(el, direction, amount) {
+    var setAmount = function (el, direction, amount) {
         var tds = $(el).children(direction);
         $('> span', tds).text('');
         var i = 1;
@@ -105,11 +105,11 @@
     var body = $('body');
     for (var i = 0; i < left; i++)
         faForm.addInlineField('#records-template', 'records')
-    body.on('click', '.record td.debit, .record td.credit', function() {
+    body.on('click', '.record td.debit, .record td.credit', function () {
         var self = $(this);
         self.parent().children('.' + self.attr('class')).first().children().show().focus();
     });
-    body.on('blur', '.record td.debit input, .record td.credit input', function() {
+    body.on('blur', '.record td.debit input, .record td.credit input', function () {
         var self = $(this);
         var td = self.parent();
         var tr = td.parent();
@@ -124,11 +124,11 @@
             $('.debit input, .credit input', tr).val('');
             self.val(amount / 100);
             $('.amount', tr).val(amount / 100);
-            $('.direction', tr).val(direction == '.debit' ? '{{ models.Direction.debit.value }}' : '{{ models.Direction.credit.value }}');
+            $('.direction', tr).val(direction == '.debit' ? '1' : '-1');
             setAmount(tr, direction, amount);
         }
         var sum = {'1': 0, '-1': 0};
-        $('.record').each(function() {
+        $('.record').each(function () {
             if ($('.amount', this).val() != '')
                 sum[$('.direction', this).val()] += Math.round(parseFloat($('.amount', this).val()) * 100);
         });
@@ -139,8 +139,8 @@
         } else
             $('.summary > td > span').first().text('');
     });
-    records.each(function() {
+    records.each(function () {
         var self = $(this);
-        $($('.direction', self).val() == '{{ models.Direction.debit.value }}' ? '.debit input' : '.credit input', self).val($('.amount', self).val()).blur();
+        $($('.direction', self).val() == '1' ? '.debit input' : '.credit input', self).val($('.amount', self).val()).blur();
     });
 })();
