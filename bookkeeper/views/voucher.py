@@ -70,6 +70,14 @@ class VoucherView(base.ViewMixin, ModelView):
         'records',
     ]
     form_base_class = VoucherForm
+    form_args = dict(
+        date=dict(format='%Y 年 %m 月 %d 日')
+    )
+    form_widget_args = dict(
+        date={
+            'data-date-format': 'YYYY 年 MM 月 DD 日',
+        }
+    )
     inline_model_form_converter = InlineRecordConverter
     inline_models = [
         (models.Record, dict(

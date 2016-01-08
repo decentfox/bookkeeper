@@ -1,14 +1,22 @@
 {% extends 'admin/model/create.html' %}
 {% import 'admin/lib.html' as lib with context %}
 
+{% macro render_field(field) %}
+    {% set _dummy = kwargs.setdefault('class', 'form-control') %}
+    {% if h.is_field_error(field.errors) %}
+        {% set _dummy = kwargs.update({'class': kwargs['class'] + ' has-error'}) %}
+    {% endif %}
+    {{ field(**kwargs)|safe }}
+{% endmacro %}
+
 {% block head %}
 {{ super() }}
 <style>
     .voucher {
         border: 1px solid #888;
-        background-color: #fefefe;
+        background-color: #fefef2;
         position: relative;
-        padding: 10px;
+        padding: 25px;
     }
 
     .voucher .title {
@@ -19,14 +27,19 @@
 
     .voucher .index {
         position: absolute;
-        right: 10px;
-        top: 10px;
+        right: 25px;
+        top: 25px;
+    }
+
+    .voucher .index input {
+        width: 44px;
+        text-align: center;
     }
 
     .voucher .date {
         position: absolute;
-        left: 10px;
-        top: 10px;
+        left: 25px;
+        top: 25px;
     }
 
     .voucher .period {
@@ -115,13 +128,34 @@
         display: block;
     }
 
-    tr.record {
+    .table-hover>tbody>tr:hover {
+        background-color: #f5f5f0;
+    }
+
+    tr.record,
+    tr.summary {
         height: 60px;
         line-height: 60px;
     }
 
-    .record td {
+    td.debit,
+    td.credit,
+    tr.summary {
+        font-weight: bold;
+    }
+
+    .voucher td {
         position: relative;
+    }
+
+    .voucher input {
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .voucher input:focus {
+        background-color: #fff;
     }
 
     .row-action {
@@ -148,25 +182,29 @@
         right: 0;
         top: 0;
         bottom: 0;
-        border: 0;
         width: 100%;
         height: 100%;
-        background-color: transparent;
     }
 
-    .record td input:focus {
-        background-color: #fff;
+    .record td input {
+        padding: 10px;
     }
 
     .record .select2-container {
         position: absolute;
     }
 
-    .record .select2-container,
-    .record .select2-choice {
+    .record .select2-container {
         height: 100%;
         line-height: 60px;
         background-color: transparent;
+    }
+
+    .record .select2-choice {
+        line-height: 40px;
+        height: 100%;
+        background-color: transparent;
+        padding: 10px;
     }
 
     .record .select2-choice > span {
@@ -200,9 +238,19 @@
     .record td.debit,
     .record td.credit {
         cursor: text;
+        width: 15px;
+    }
+
+    td.debit span,
+    td.credit span {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        vertical-align: middle;
         line-height: 60px;
         text-align: center;
-        padding: 0;
     }
 </style>
 {% endblock %}
@@ -219,18 +267,18 @@
           class="admin-form form-inline" enctype="multipart/form-data">
         <div class="voucher">
             <div class="date">
-                {{ form.date(class='form-control') | safe }}
+                {{ render_field(form.date) }}
             </div>
             <div class="title">
                 记账凭证
             </div>
             <div class="index">
                 凭证字 记
-                {{ form.index(class='form-control') | safe }}
+                {{ render_field(form.index) }}
                 号
             </div>
 {#            <div class="period">#}
-{#                {{ form.period(class='form-control') | safe }}#}
+{#                {{ render_field(form.period) }}#}
 {#            </div>#}
             <table class="records table table-bordered table-condensed table-hover">
                 <thead>
@@ -275,8 +323,11 @@
                 </thead>
                 <tbody>
                 {{ form.records() | safe }}
-                <tr>
-                    <td colspan="2">合计</td>
+                <tr class="summary">
+                    <td colspan="2">
+                        合计：
+                        <span></span>
+                    </td>
                     <td class="debit"><span></span></td>
                     <td class="debit"><span></span></td>
                     <td class="debit thousand"><span></span></td>
@@ -303,7 +354,7 @@
                 </tbody>
             </table>
             <div class="company">
-                {{ form.company(class='form-control') | safe }}
+                {{ render_field(form.company) }}
                 制单人：
             </div>
 
@@ -375,6 +426,49 @@
         }
     };
 
+    var digitUppercase = function (n) {
+        var fraction = ['角', '分'];
+        var digit = [
+            '零', '壹', '贰', '叁', '肆',
+            '伍', '陆', '柒', '捌', '玖'
+        ];
+        var unit = [
+            ['元', '万', '亿'],
+            ['', '拾', '佰', '仟']
+        ];
+        var head = n < 0 ? '欠' : '';
+        n = Math.abs(n);
+        var s = '';
+        for (var i = 0; i < fraction.length; i++) {
+            s += (digit[Math.floor(n * 10 * Math.pow(10, i)) % 10] + fraction[i]).replace(/零./, '');
+        }
+        s = s || '整';
+        n = Math.floor(n);
+        for (var i = 0; i < unit[0].length && n > 0; i++) {
+            var p = '';
+            for (var j = 0; j < unit[1].length && n > 0; j++) {
+                p = digit[n % 10] + unit[1][j] + p;
+                n = Math.floor(n / 10);
+            }
+            s = p.replace(/(零.)*零$/, '').replace(/^$/, '零') + unit[0][i] + s;
+        }
+        return head + s.replace(/(零.)*零元/, '元')
+                        .replace(/(零.)+/g, '零')
+                        .replace(/^整$/, '零元整');
+    };
+
+    var setAmount = function(el, direction, amount) {
+        var tds = $(el).children(direction);
+        $('> span', tds).text('');
+        var i = 1;
+        while (amount > 0 || i < 4) {
+            var digit = amount % 10;
+            amount = Math.floor(amount / 10);
+            $('> span', tds[tds.size() - i]).text(digit);
+            i++;
+        }
+    };
+
     var records = $('.record');
     var left = 4 - records.size();
     var body = $('body');
@@ -386,25 +480,33 @@
     });
     body.on('blur', '.record td.debit input, .record td.credit input', function() {
         var self = $(this);
-        self.hide();
-        if (!self.val()) return;
-        var amount = Math.round(self.val() * 100);
         var td = self.parent();
         var tr = td.parent();
-        var direction = '.' + td.attr('class');
-        $('.debit input, .credit input', tr).val('');
-        self.val(amount / 100);
-        $('.amount', tr).val(amount / 100);
-        $('.direction', tr).val(direction == '.debit' ? '{{ models.Direction.debit.value }}' : '{{ models.Direction.credit.value }}');
-        var tds = tr.children(direction);
+        self.hide();
         $('td.debit > span, td.credit > span', tr).text('');
-        var i = 1;
-        while (amount > 0 || i < 4) {
-            var digit = amount % 10;
-            amount = Math.floor(amount / 10);
-            $('> span', tds[tds.size() - i]).text(digit);
-            i++;
+        if (!self.val()) {
+            self.val('');
+            $('.amount', tr).val('');
+        } else {
+            var amount = Math.round(self.val() * 100);
+            var direction = '.' + td.attr('class');
+            $('.debit input, .credit input', tr).val('');
+            self.val(amount / 100);
+            $('.amount', tr).val(amount / 100);
+            $('.direction', tr).val(direction == '.debit' ? '{{ models.Direction.debit.value }}' : '{{ models.Direction.credit.value }}');
+            setAmount(tr, direction, amount);
         }
+        var sum = {'1': 0, '-1': 0};
+        $('.record').each(function() {
+            if ($('.amount', this).val() != '')
+                sum[$('.direction', this).val()] += Math.round(parseFloat($('.amount', this).val()) * 100);
+        });
+        setAmount('.summary', '.debit', sum['1']);
+        setAmount('.summary', '.credit', sum['-1']);
+        if (sum['1'] == sum['-1']) {
+            $('.summary > td > span').first().text(digitUppercase(sum['1'] / 100));
+        } else
+            $('.summary > td > span').first().text('');
     });
     records.each(function() {
         var self = $(this);
