@@ -3,6 +3,7 @@ from enum import IntEnum
 import datetime
 import sqlalchemy as sa
 from decent.web import db
+from flask.ext.security import RoleMixin, UserMixin
 from sqlalchemy_utils import ChoiceType
 
 
@@ -22,11 +23,35 @@ users_x_companies = sa.Table(
 )
 
 
-class User(db.Model, db.SurrogatePK):
+roles_x_users = sa.Table(
+    'bkr_users_x_roles', db.Model.metadata,
+    sa.Column('users_id', sa.BigInteger(), sa.ForeignKey('bkr_users.id')),
+    sa.Column('roles_id', sa.BigInteger(), sa.ForeignKey('bkr_roles.id')),
+)
+
+
+class User(db.Model, db.SurrogatePK, UserMixin):
     __tablename__ = 'bkr_users'
 
     companies = db.relationship(
         'Company', secondary=users_x_companies, backref='users')
+    email = db.Column(sa.Unicode(), unique=True)
+    password = db.Column(sa.Unicode())
+    active = db.Column(sa.Boolean())
+    confirmed_at = db.Column(sa.DateTime())
+    last_login_at = db.Column(sa.DateTime())
+    current_login_at = db.Column(sa.DateTime())
+    last_login_ip = db.Column(sa.Unicode())
+    current_login_ip = db.Column(sa.Unicode())
+    login_count = db.Column(sa.BigInteger())
+    roles = db.relationship('Role', secondary=roles_x_users, backref='users')
+
+
+class Role(db.Model, db.SurrogatePK, RoleMixin):
+    __tablename__ = 'bkr_roles'
+
+    name = db.Column(sa.Unicode(), unique=True)
+    description = db.Column(sa.Unicode())
 
 
 class Company(db.Model, db.SurrogatePK):

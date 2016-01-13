@@ -25,6 +25,7 @@ setuptools.setup(
     install_requires=[
         'decent-web==0.1.0',
         'Flask-Admin==1.4.0',
+        'Flask-Security==1.7.5',
         'psycopg2==2.6.1',
         'SQLAlchemy-Utils==0.31.4',
     ],

@@ -1,5 +1,7 @@
 from flask.ext.admin import AdminIndexView
 
+from ..auth import AuthOverride
 
-class IndexView(AdminIndexView):
+
+class IndexView(AuthOverride, AdminIndexView):
     pass

@@ -6,6 +6,7 @@ from flask.ext.admin.model.fields import InlineModelFormField
 from flask.ext.admin.model.widgets import InlineFormWidget
 from wtforms import HiddenField
 
+from ..auth import AuthOverride
 from .. import models
 
 
@@ -58,7 +59,7 @@ class VoucherForm(BaseForm):
 
 
 # noinspection PyAbstractClass
-class VoucherView(ModelView):
+class VoucherView(AuthOverride, ModelView):
     create_template = 'voucher_create.html'
     edit_template = 'voucher_edit.html'
     form_columns = [

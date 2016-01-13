@@ -1,16 +1,22 @@
-from decent.web import register_extension
-from flask import Blueprint
+from decent.web import DecentWeb
+from flask import Flask
+from flask.ext.mail import Mail
 
 
-@register_extension
-def _init(app):
-    from . import admin
-    from . import models
+def create_app():
+    app = Flask(__name__)
     from . import config
-
     app.config.from_object(config)
-    app.register_blueprint(Blueprint('bkr', __name__,
-                                     static_url_path='/static/bkr',
-                                     static_folder='static',
-                                     template_folder='templates'))
+
+    DecentWeb(app)
+
+    from . import models
+    from . import admin
     admin.admin.init_app(app)
+
+    from . import auth
+    auth.init(app)
+
+    Mail(app)
+
+    return app

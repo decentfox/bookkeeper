@@ -1,7 +1,7 @@
 import csv
 import sys
 
-from decent.web.app import create_app
+from . import create_app
 
 from bookkeeper import models
 
