@@ -1,0 +1,9 @@
+{% extends 'admin/model/list.html' %}
+
+{% block list_row_actions scoped %}
+    {{ super() }}
+    <a class="icon" href="{{ url_for('.switch_view', id=row.id) }}">
+        <span class="glyphicon glyphicon-ok"
+              {% if current_user.current_company.id == row.id %}style="color: #00dd00" {% endif %}></span>
+    </a>
+{% endblock %}

@@ -1,5 +1,6 @@
 from decent.web import DecentWeb
 from flask import Flask
+from flask.ext.debugtoolbar import DebugToolbarExtension
 from flask.ext.mail import Mail
 
 
@@ -18,5 +19,7 @@ def create_app():
     auth.init(app)
 
     Mail(app)
+
+    DebugToolbarExtension(app)
 
     return app

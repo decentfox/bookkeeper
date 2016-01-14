@@ -1,15 +1,22 @@
+import datetime
 from enum import IntEnum
 
-import datetime
 import sqlalchemy as sa
 from decent.web import db
+from decent.web.cache import cache
+from flask import session
+from flask.ext.principal import ItemNeed, Permission
 from flask.ext.security import RoleMixin, UserMixin
+from sqlalchemy import event
 from sqlalchemy_utils import ChoiceType
 
 
 class Direction(IntEnum):
     debit = 1
     credit = -1
+
+    def __str__(self):
+        return self.label
 
 
 Direction.debit.label = '借'
@@ -21,7 +28,6 @@ users_x_companies = sa.Table(
     sa.Column('companies_id', sa.BigInteger(),
               sa.ForeignKey('bkr_companies.id')),
 )
-
 
 roles_x_users = sa.Table(
     'bkr_users_x_roles', db.Model.metadata,
@@ -44,7 +50,54 @@ class User(db.Model, db.SurrogatePK, UserMixin):
     last_login_ip = db.Column(sa.Unicode())
     current_login_ip = db.Column(sa.Unicode())
     login_count = db.Column(sa.BigInteger())
-    roles = db.relationship('Role', secondary=roles_x_users, backref='users')
+    r_roles = db.relationship('Role', secondary=roles_x_users, backref='users')
+
+    def __str__(self):
+        return self.email or str(self.id)
+
+    @cache.memoize()
+    def all_needs(self):
+        def gen():
+            for company in self.companies:
+                yield company.perm
+
+        return list(gen())
+
+    @property
+    def current_company(self):
+        rv = None
+        company_id = session.get('CURRENT_COMPANY')
+        if company_id:
+            rv = Company.get_by_id(company_id)
+            if not Permission(rv.perm).can():
+                session.pop('CURRENT_COMPANY')
+                rv = None
+        if not rv and self.companies:
+            rv = self.companies[0]
+            session['CURRENT_COMPANY'] = rv.id
+        return rv
+
+    @current_company.setter
+    def current_company(self, val):
+        session['CURRENT_COMPANY'] = getattr(val, 'id', val)
+
+    @property
+    def roles(self):
+        return self.get_roles()
+
+    @cache.memoize()
+    def get_roles(self):
+        return self.r_roles
+
+
+@event.listens_for(User.companies, 'dispose_collection')
+def on_user_companies_change(target, *_):
+    db.db.session.delete_memoized(target.all_needs)
+
+
+@event.listens_for(User.r_roles, 'dispose_collection')
+def on_user_roles_change(target, *_):
+    db.db.session.delete_memoized(target.get_roles)
 
 
 class Role(db.Model, db.SurrogatePK, RoleMixin):
@@ -53,14 +106,21 @@ class Role(db.Model, db.SurrogatePK, RoleMixin):
     name = db.Column(sa.Unicode(), unique=True)
     description = db.Column(sa.Unicode())
 
+    def __str__(self):
+        return self.description or ''
+
 
 class Company(db.Model, db.SurrogatePK):
     __tablename__ = 'bkr_companies'
 
     name = db.Column(sa.Unicode())
 
-    def __repr__(self):
-        return self.name
+    def __str__(self):
+        return self.name or ''
+
+    @property
+    def perm(self):
+        return ItemNeed('in', self.id, self.__tablename__)
 
 
 class Period(db.Model, db.SurrogatePK):
@@ -69,7 +129,7 @@ class Period(db.Model, db.SurrogatePK):
     year = db.Column(sa.Integer())
     month = db.Column(sa.SmallInteger())
 
-    def __repr__(self):
+    def __str__(self):
         return '{}年第{}期'.format(self.year, self.month)
 
 
@@ -86,7 +146,7 @@ class Account(db.Model, db.SurrogatePK):
     parent = db.relationship('Account', backref='children',
                              remote_side=[id])
 
-    def __repr__(self):
+    def __str__(self):
         return '{} {}'.format(self.code, self.title)
 
 
