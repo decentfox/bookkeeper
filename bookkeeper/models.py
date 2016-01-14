@@ -82,6 +82,24 @@ class User(db.Model, db.SurrogatePK, UserMixin):
         session['CURRENT_COMPANY'] = getattr(val, 'id', val)
 
     @property
+    def current_period(self):
+        rv = None
+        period_id = session.get('CURRENT_PERIOD')
+        if period_id:
+            rv = Period.get_by_id(period_id)
+        if not rv:
+            now = datetime.datetime.today()
+            rv = Period.query.filter_by(year=now.year, month=now.month).one()
+            if not rv:
+                rv = Period.create(year=now.year, month=now.month)
+            session['CURRENT_PERIOD'] = rv.id
+        return rv
+
+    @current_period.setter
+    def current_period(self, val):
+        session['CURRENT_PERIOD'] = getattr(val, 'id', val)
+
+    @property
     def roles(self):
         return self.get_roles()
 

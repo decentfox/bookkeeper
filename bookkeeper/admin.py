@@ -6,7 +6,7 @@ from flask.ext.admin.menu import MenuLink
 from flask.ext.login import current_user
 
 from . import models
-from .views import (index, voucher, company)
+from .views import (index, voucher, company, period)
 
 admin = Admin(name='簿记员', url='/',
               index_view=index.IndexView(url='/', menu_class_name='hide'),
@@ -18,7 +18,8 @@ admin.add_view(ModelView(models.User, db.session, '用户', category='设置'))
 admin.add_view(ModelView(models.Role, db.session, '角色', category='设置'))
 admin.add_view(
     company.CompanyView(models.Company, db.session, '公司', category='设置'))
-admin.add_view(ModelView(models.Period, db.session, '账期', category='设置'))
+admin.add_view(
+    period.PeriodView(models.Period, db.session, '账期', category='设置'))
 
 
 # noinspection PyAbstractClass
@@ -59,7 +60,17 @@ class CompanyLink(MenuLink):
         return getattr(current_user, 'current_company', None) is not None
 
 
+class PeriodLink(UserLink):
+    @property
+    def name(self):
+        return str(current_user.current_period)
+
+    @name.setter
+    def name(self, val):
+        pass
+
 admin.add_link(AnonymousLink('登入', endpoint='security.login'))
+admin.add_link(PeriodLink('period', endpoint='period.index_view'))
 admin.add_link(CompanyLink('company', endpoint='company.index_view'))
 admin.add_link(UserNameLink('name', endpoint='user.edit_view'))
 admin.add_link(UserLink('登出', endpoint='security.logout'))

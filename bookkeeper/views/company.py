@@ -25,6 +25,6 @@ class CompanyView(AuthOverride, ModelView):
 
     @expose('/switch/')
     def switch_view(self):
-        id = get_mdict_item_or_list(request.args, 'id')
-        current_user.current_company = id
+        id_ = get_mdict_item_or_list(request.args, 'id')
+        current_user.current_company = id_
         return redirect(url_for('.index_view'))
