@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from decent.web import db
 from decent.web.cache import cache
 from flask import session
-from flask.ext.principal import ItemNeed, Permission
+from flask.ext.principal import ItemNeed, Permission, TypeNeed
 from flask.ext.security import RoleMixin, UserMixin
 from sqlalchemy import event
 from sqlalchemy_utils import ChoiceType
@@ -58,6 +58,8 @@ class User(db.Model, db.SurrogatePK, UserMixin):
     @cache.memoize()
     def all_needs(self):
         def gen():
+            if self.active:
+                yield TypeNeed('active')
             for company in self.companies:
                 yield company.perm
 
@@ -110,6 +112,11 @@ class User(db.Model, db.SurrogatePK, UserMixin):
 
 @event.listens_for(User.companies, 'dispose_collection')
 def on_user_companies_change(target, *_):
+    db.db.session.delete_memoized(target.all_needs)
+
+
+@event.listens_for(User.active, 'set')
+def on_user_active_change(target, *_):
     db.db.session.delete_memoized(target.all_needs)
 
 

@@ -1,7 +1,6 @@
-SECRET_KEY = 'development secret'
-
 SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/bkr'
 
+SECURITY_PASSWORD_HASH = 'bcrypt'
 SECURITY_CONFIRMABLE = True
 SECURITY_REGISTERABLE = True
 SECURITY_RECOVERABLE = True
@@ -13,3 +12,8 @@ MAIL_PORT = 994
 MAIL_USE_SSL = True
 SECURITY_EMAIL_SENDER = MAIL_USERNAME = 'noreply@decentfox.com'
 MAIL_PASSWORD = ''
+
+try:
+    from .local_config import *
+except ImportError:
+    pass

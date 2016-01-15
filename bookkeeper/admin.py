@@ -8,19 +8,6 @@ from flask.ext.login import current_user
 from . import models
 from .views import (index, voucher, company, period)
 
-admin = Admin(name='簿记员', url='/',
-              index_view=index.IndexView(url='/', menu_class_name='hide'),
-              template_mode='bootstrap3', base_template='base.html')
-
-admin.add_view(voucher.VoucherView(models.Voucher, db.session, '凭证'))
-admin.add_view(ModelView(models.Account, db.session, '科目', category='设置'))
-admin.add_view(ModelView(models.User, db.session, '用户', category='设置'))
-admin.add_view(ModelView(models.Role, db.session, '角色', category='设置'))
-admin.add_view(
-    company.CompanyView(models.Company, db.session, '公司', category='设置'))
-admin.add_view(
-    period.PeriodView(models.Period, db.session, '账期', category='设置'))
-
 
 # noinspection PyAbstractClass
 class AnonymousLink(MenuLink):
@@ -69,8 +56,22 @@ class PeriodLink(UserLink):
     def name(self, val):
         pass
 
-admin.add_link(AnonymousLink('登入', endpoint='security.login'))
-admin.add_link(PeriodLink('period', endpoint='period.index_view'))
-admin.add_link(CompanyLink('company', endpoint='company.index_view'))
-admin.add_link(UserNameLink('name', endpoint='user.edit_view'))
-admin.add_link(UserLink('登出', endpoint='security.logout'))
+
+def init_app(app):
+    admin = Admin(app=app, name='簿记员', url='/',
+                  index_view=index.IndexView(url='/', menu_class_name='hide'),
+                  template_mode='bootstrap3', base_template='base.html')
+    admin.add_view(voucher.VoucherView(models.Voucher, db.session, '凭证'))
+    admin.add_view(ModelView(
+        models.Account, db.session, '科目', category='设置'))
+    admin.add_view(ModelView(models.User, db.session, '用户', category='设置'))
+    admin.add_view(ModelView(models.Role, db.session, '角色', category='设置'))
+    admin.add_view(company.CompanyView(
+        models.Company, db.session, '公司', category='设置'))
+    admin.add_view(
+        period.PeriodView(models.Period, db.session, '账期', category='设置'))
+    admin.add_link(AnonymousLink('登入', endpoint='security.login'))
+    admin.add_link(PeriodLink('period', endpoint='period.index_view'))
+    admin.add_link(CompanyLink('company', endpoint='company.index_view'))
+    admin.add_link(UserNameLink('name', endpoint='user.edit_view'))
+    admin.add_link(UserLink('登出', endpoint='security.logout'))

@@ -23,6 +23,7 @@ setuptools.setup(
     ],
 
     install_requires=[
+        'bcrypt==1.1.1',
         'decent-web==0.1.0',
         'Flask-Admin==1.4.0',
         'Flask-DebugToolbar==0.10.0',
