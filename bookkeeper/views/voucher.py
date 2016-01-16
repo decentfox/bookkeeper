@@ -4,10 +4,11 @@ from flask.ext.admin.contrib.sqla.form import InlineModelConverter
 from flask.ext.admin.form import RenderTemplateWidget, BaseForm
 from flask.ext.admin.model.fields import InlineModelFormField
 from flask.ext.admin.model.widgets import InlineFormWidget
+from flask.ext.login import current_user
 from wtforms import HiddenField
 
-from ..auth import AuthOverride
 from .. import models
+from ..auth import AuthOverride
 
 
 class InlineRecordFieldListWidget(RenderTemplateWidget):
@@ -65,8 +66,6 @@ class VoucherView(AuthOverride, ModelView):
     form_columns = [
         'index',
         'date',
-        'company',
-        'period',
         'records',
     ]
     form_base_class = VoucherForm
@@ -103,6 +102,12 @@ class VoucherView(AuthOverride, ModelView):
             ),
         ))
     ]
+
+    def on_model_change(self, form, model, is_created):
+        if is_created:
+            model.creator = current_user
+            model.company = current_user.current_company
+            model.period = current_user.current_period
 
     def render(self, template, **kwargs):
         kwargs['models'] = models

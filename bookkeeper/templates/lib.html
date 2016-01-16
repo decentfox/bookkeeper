@@ -112,8 +112,11 @@
                 </tbody>
             </table>
             <div class="company">
-                {{ render_field(form.company) }}
+                单位：
+                {{ current_user.current_company.name }}
+                &nbsp;
                 制单人：
+                {{ current_user }}
             </div>
 
             <div class="clear"></div>

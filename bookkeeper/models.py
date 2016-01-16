@@ -49,6 +49,7 @@ class CompanyRole(db.Model, db.SurrogatePK):
 class User(db.Model, db.SurrogatePK, UserMixin):
     __tablename__ = 'bkr_users'
 
+    name = db.Column(sa.Unicode())
     email = db.Column(sa.Unicode(), unique=True)
     password = db.Column(sa.Unicode())
     active = db.Column(sa.Boolean())
@@ -60,7 +61,7 @@ class User(db.Model, db.SurrogatePK, UserMixin):
     login_count = db.Column(sa.BigInteger())
 
     def __str__(self):
-        return self.email or str(self.id)
+        return self.name or self.email or str(self.id)
 
     # @cache.memoize()
     def all_needs(self):

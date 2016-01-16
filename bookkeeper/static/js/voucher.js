@@ -105,12 +105,16 @@
     var body = $('body');
     for (var i = 0; i < left; i++)
         faForm.addInlineField('#records-template', 'records')
-    body.on('click', '.record td.debit, .record td.credit', function () {
+    body.on('click', '.record td.debit', function () {
         var self = $(this);
-        self.parent().children('.' + self.attr('class')).first().children().show().focus();
+        self.parent().children('.debit').first().children().show().focus();
     });
-    body.on('blur', '.record td.debit input, .record td.credit input', function () {
+    body.on('click', '.record td.credit', function () {
         var self = $(this);
+        self.parent().children('.credit').first().children().show().focus();
+    });
+    function calc_amount(el, secondary, auto) {
+        var self = $(el);
         var td = self.parent();
         var tr = td.parent();
         self.hide();
@@ -118,7 +122,13 @@
         if (!self.val()) {
             self.val('');
             $('.amount', tr).val('');
+            if (!auto) {
+                tr.data('user', '');
+            }
         } else {
+            if (!auto) {
+                tr.data('user', 1);
+            }
             var amount = Math.round(self.val() * 100);
             var direction = '.' + td.attr('class');
             $('.debit input, .credit input', tr).val('');
@@ -134,13 +144,46 @@
         });
         setAmount('.summary', '.debit', sum['1']);
         setAmount('.summary', '.credit', sum['-1']);
+        if (!secondary && sum['1'] != sum['-1']) {
+            var current_tr = tr;
+            while (true) {
+                var next_tr = current_tr.next();
+                if (next_tr && next_tr.hasClass('record')) {
+                    if (!next_tr.data('user')) {
+                        var next_amount = $('.amount', next_tr);
+                        if (next_amount.val()) {
+                            sum[$('.direction', next_tr).val()] -= next_amount.val() * 100;
+                        }
+                        var amend_direction = sum['1'] < sum['-1'] ? '1' : '-1';
+                        var amend_amount = Math.abs(sum['1'] - sum['-1']);
+                        sum[amend_direction] += amend_amount;
+                        calc_amount($(amend_direction == '1' ? '.debit input' : '.credit input', next_tr).val(amend_amount / 100), true, true);
+                        break;
+                    }
+                    current_tr = next_tr;
+                } else {
+                    faForm.addInlineField(next_tr, 'records');
+                }
+            }
+        }
+        console.log(sum);
         if (sum['1'] == sum['-1']) {
             $('.summary > td > span').first().text(digitUppercase(sum['1'] / 100));
         } else
             $('.summary > td > span').first().text('');
+    }
+    body.on('blur', '.record td.debit input, .record td.credit input', function () {
+        calc_amount(this);
+    });
+    body.on('focus', '.summary-field', function() {
+        var self = $(this);
+        if (!self.val())
+            self.val($('.summary-field', self.parent().parent().prev()).val());
     });
     records.each(function () {
         var self = $(this);
-        $($('.direction', self).val() == '1' ? '.debit input' : '.credit input', self).val($('.amount', self).val()).blur();
+        var amount = $('.amount', self).val();
+        if (amount)
+            calc_amount($($('.direction', self).val() == '1' ? '.debit input' : '.credit input', self).val(amount), true);
     });
 })();
