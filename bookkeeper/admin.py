@@ -66,6 +66,8 @@ def init_app(app):
         models.Account, db.session, '科目', category='设置'))
     admin.add_view(ModelView(models.User, db.session, '用户', category='设置'))
     admin.add_view(ModelView(models.Role, db.session, '角色', category='设置'))
+    admin.add_view(ModelView(
+        models.CompanyRole, db.session, '角色分配', category='设置'))
     admin.add_view(company.CompanyView(
         models.Company, db.session, '公司', category='设置'))
     admin.add_view(

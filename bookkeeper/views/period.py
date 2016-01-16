@@ -3,16 +3,12 @@ from flask.ext.admin import expose
 from flask.ext.admin.contrib.sqla import ModelView
 from flask.ext.admin.model.helpers import get_mdict_item_or_list
 from flask.ext.login import current_user
-from flask.ext.principal import RoleNeed
 
-from ..auth import AuthOverride
+from ..auth import SuperOverride
 
 
-class PeriodView(AuthOverride, ModelView):
+class PeriodView(SuperOverride, ModelView):
     list_template = 'period_list.html'
-    create_perms = RoleNeed('super'),
-    edit_perms = RoleNeed('super'),
-    delete_perms = RoleNeed('super'),
 
     @expose('/switch/')
     def switch_view(self):

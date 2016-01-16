@@ -5,10 +5,12 @@ import sqlalchemy as sa
 from decent.web import db
 from decent.web.cache import cache
 from flask import session
-from flask.ext.principal import ItemNeed, Permission, TypeNeed
+from flask.ext.principal import Permission
 from flask.ext.security import RoleMixin, UserMixin
 from sqlalchemy import event
 from sqlalchemy_utils import ChoiceType
+
+from . import const
 
 
 class Direction(IntEnum):
@@ -22,25 +24,31 @@ class Direction(IntEnum):
 Direction.debit.label = '借'
 Direction.credit.label = '贷'
 
-users_x_companies = sa.Table(
-    'bkr_users_x_companies', db.Model.metadata,
-    sa.Column('users_id', sa.BigInteger(), sa.ForeignKey('bkr_users.id')),
-    sa.Column('companies_id', sa.BigInteger(),
-              sa.ForeignKey('bkr_companies.id')),
-)
 
-roles_x_users = sa.Table(
-    'bkr_users_x_roles', db.Model.metadata,
-    sa.Column('users_id', sa.BigInteger(), sa.ForeignKey('bkr_users.id')),
-    sa.Column('roles_id', sa.BigInteger(), sa.ForeignKey('bkr_roles.id')),
-)
+class CompanyRole(db.Model, db.SurrogatePK):
+    __tablename__ = 'bkr_company_roles'
+
+    user_id = db.reference_col('bkr_users')
+    user = db.relationship('User', backref='company_roles')
+
+    company_id = db.reference_col('bkr_companies')
+    company = db.relationship('Company', backref='roles')
+
+    role_id = db.reference_col('bkr_roles')
+    role = db.relationship('Role')
+
+    @property
+    def perm(self):
+        return const.P_COMPANY_ROLE(self.company_id, self.role_cached.name)
+
+    @property
+    def role_cached(self):
+        return Role.get_by_id(self.role_id)
 
 
 class User(db.Model, db.SurrogatePK, UserMixin):
     __tablename__ = 'bkr_users'
 
-    companies = db.relationship(
-        'Company', secondary=users_x_companies, backref='users')
     email = db.Column(sa.Unicode(), unique=True)
     password = db.Column(sa.Unicode())
     active = db.Column(sa.Boolean())
@@ -50,18 +58,18 @@ class User(db.Model, db.SurrogatePK, UserMixin):
     last_login_ip = db.Column(sa.Unicode())
     current_login_ip = db.Column(sa.Unicode())
     login_count = db.Column(sa.BigInteger())
-    r_roles = db.relationship('Role', secondary=roles_x_users, backref='users')
 
     def __str__(self):
         return self.email or str(self.id)
 
-    @cache.memoize()
+    # @cache.memoize()
     def all_needs(self):
         def gen():
             if self.active:
-                yield TypeNeed('active')
-            for company in self.companies:
-                yield company.perm
+                yield const.P_USER_ACTIVE
+            for role in self.get_roles():
+                yield role.perm
+                yield const.P_COMPANY(role.company_id)
 
         return list(gen())
 
@@ -71,17 +79,27 @@ class User(db.Model, db.SurrogatePK, UserMixin):
         company_id = session.get('CURRENT_COMPANY')
         if company_id:
             rv = Company.get_by_id(company_id)
-            if not Permission(rv.perm).can():
-                session.pop('CURRENT_COMPANY')
+        roles = self.get_roles()
+        if rv:
+            for role in roles:
+                if rv.id == role.company_id:
+                    break
+            else:
                 rv = None
-        if not rv and self.companies:
-            rv = self.companies[0]
+        if not rv and roles:
+            rv = roles[0].company
             session['CURRENT_COMPANY'] = rv.id
         return rv
 
     @current_company.setter
     def current_company(self, val):
-        session['CURRENT_COMPANY'] = getattr(val, 'id', val)
+        id_ = getattr(val, 'id', val)
+        with Permission(
+                const.P_SUPER_ADMIN,
+                const.P_COMPANY(id_),
+        ).require(http_exception=403):
+            session['CURRENT_COMPANY'] = id_
+            cache.delete_memoized(self.get_roles_cached)
 
     @property
     def current_period(self):
@@ -103,26 +121,42 @@ class User(db.Model, db.SurrogatePK, UserMixin):
 
     @property
     def roles(self):
-        return self.get_roles()
+        company = self.current_company
+        if company:
+            rv = [r.role_cached for r in self.get_roles()
+                  if r.company.id == company.id or
+                  r.role_cached.name == const.P_SUPER_ADMIN[-1]]
+            return rv
+        else:
+            return []
+
+    def get_roles(self):
+        roles = self.get_roles_cached()
+        rv = []
+        for role in roles:
+            if role in db.db.session:
+                rv.append(role)
+            else:
+                rv.append(db.db.session.merge(role, load=False))
+        return rv
 
     @cache.memoize()
-    def get_roles(self):
-        return self.r_roles
+    def get_roles_cached(self):
+        return self.company_roles
 
 
-@event.listens_for(User.companies, 'dispose_collection')
-def on_user_companies_change(target, *_):
-    db.db.session.delete_memoized(target.all_needs)
+# @event.listens_for(User.active, 'set')
+# def on_user_active_change(target, *_):
+#     db.db.session.delete_memoized(target.all_needs)
 
 
-@event.listens_for(User.active, 'set')
-def on_user_active_change(target, *_):
-    db.db.session.delete_memoized(target.all_needs)
-
-
-@event.listens_for(User.r_roles, 'dispose_collection')
-def on_user_roles_change(target, *_):
-    db.db.session.delete_memoized(target.get_roles)
+@event.listens_for(CompanyRole, 'after_insert')
+@event.listens_for(CompanyRole, 'after_update')
+@event.listens_for(CompanyRole, 'after_delete')
+def on_user_roles_change(mapper, conn, target):
+    # noinspection PyArgumentList
+    stub = User(id=target.user_id)
+    db.db.session.delete_memoized(stub.get_roles_cached)
 
 
 class Role(db.Model, db.SurrogatePK, RoleMixin):
@@ -133,6 +167,10 @@ class Role(db.Model, db.SurrogatePK, RoleMixin):
 
     def __str__(self):
         return self.description or ''
+
+    @classmethod
+    def get_by_need(cls, need):
+        return cls.query.filter_by(name=need[-1]).one()
 
 
 class Company(db.Model, db.SurrogatePK):
@@ -145,7 +183,7 @@ class Company(db.Model, db.SurrogatePK):
 
     @property
     def perm(self):
-        return ItemNeed('in', self.id, self.__tablename__)
+        return const.P_COMPANY(self.id)
 
 
 class Period(db.Model, db.SurrogatePK):

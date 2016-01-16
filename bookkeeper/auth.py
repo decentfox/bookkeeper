@@ -2,9 +2,10 @@ from decent.web import db
 from flask import redirect, url_for, request
 from flask.ext.admin import helpers
 from flask.ext.login import current_user
-from flask.ext.principal import identity_loaded, Permission, TypeNeed, Denial
+from flask.ext.principal import identity_loaded, Permission, Denial
 from flask.ext.security import SQLAlchemyUserDatastore, Security
 
+from . import const
 from . import models
 
 
@@ -20,7 +21,7 @@ datastore = CachedDatastore(db.db, models.User, models.Role)
 
 
 class AuthOverride:
-    access_perms = TypeNeed('active'),
+    access_perms = const.P_USER_ACTIVE,
     create_perms = ()
     edit_perms = ()
     delete_perms = ()
@@ -30,8 +31,8 @@ class AuthOverride:
     create_denials = ()
     edit_denials = ()
     delete_denials = ()
-    detail_denials = TypeNeed('active'),
-    export_denials = TypeNeed('active'),
+    detail_denials = const.P_USER_ACTIVE,
+    export_denials = const.P_USER_ACTIVE,
 
     def is_accessible(self):
         return Permission(*self.access_perms).union(
@@ -64,6 +65,12 @@ class AuthOverride:
     def can_export(self):
         return Permission(*self.export_perms).union(
             Denial(*self.export_denials)).can()
+
+
+class SuperOverride(AuthOverride):
+    create_perms = const.P_SUPER_ADMIN,
+    edit_perms = const.P_SUPER_ADMIN,
+    delete_perms = const.P_SUPER_ADMIN,
 
 
 @identity_loaded.connect
