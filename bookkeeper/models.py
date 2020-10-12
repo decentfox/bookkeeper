@@ -218,7 +218,7 @@ class Voucher(db.Model, db.SurrogatePK):
     __tablename__ = 'bkr_vouchers'
 
     index = db.Column(sa.Integer())
-    date = db.Column(sa.Date(), default=datetime.datetime.today())
+    date = db.Column(sa.Date(), default=datetime.datetime.utcnow)
 
     creator_id = db.reference_col('bkr_users')
     creator = db.relationship('User', backref='vouchers')
